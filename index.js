@@ -1,16 +1,19 @@
 const express = require('express');
+require('dotenv').config();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
 
 // middleware
 app.use(cors({
   origin: [
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://car-doctor-client-2.web.app',
+    'https://car-doctor-client-2.firebaseapp.com'
   ],
   credentials : true
 }));
@@ -70,13 +73,12 @@ const bookingCollection = client.db('carDoctor').collection('bookings')
         expiresIn: '1h'
     });
 
-    res
-        .cookie('token', token, {
-            httpOnly: true,
-            secure: true,
-            sameSite:'none'
-        })
-        .send({ success: true })
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+  })
+   .send({status: true})
 })
 
 
